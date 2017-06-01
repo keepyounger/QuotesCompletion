@@ -28,13 +28,24 @@ class SourceEditorCommand: NSObject, XCSourceEditorCommand {
             let temp: XCSourceTextRange = range as! XCSourceTextRange
             for i in temp.start.line ... temp.end.line {
                 var s = 0
-                var e = (self.buffer.lines[i] as! String).lengthOfBytes(using: .utf8)
-                if i==temp.start.line {
+                let text: String = self.buffer.lines[i] as! String
+                var e = text.lengthOfBytes(using: .utf8)
+                let flag = text.trimmingCharacters(in: CharacterSet(charactersIn:" \n")).lengthOfBytes(using: .utf8)
+                if flag == 0 {
+                    continue
+                }
+                
+                if i == temp.start.line {
                     s = temp.start.column
                 }
                 
                 if i == temp.end.line {
                     e = temp.end.column
+                    if e == 0 {
+                        continue
+                    }
+                } else {
+                    e -= 1
                 }
                 
                 lines.append((i, s, e))
