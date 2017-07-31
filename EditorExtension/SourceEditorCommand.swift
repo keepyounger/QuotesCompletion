@@ -22,6 +22,23 @@ class SourceEditorCommand: NSObject, XCSourceEditorCommand {
         let startInt = buffer.contentUTI.range(of: "swift")
         isSwift = (startInt != nil)
         
+        
+        if let selection = buffer.selections.firstObject as? XCSourceTextRange {
+            if selection.start.line == selection.end.line && selection.start.column == selection.end.column {
+                let string = self.buffer.lines[selection.start.line] as! String
+                let rex = try! NSRegularExpression(pattern: "[a-z_A-Z][a-zA-Z0-9]*")
+                let rs = rex.matches(in: string, options: .reportCompletion, range: NSMakeRange(0, string.characters.count))
+                for r in rs {
+                    if r.range.location <= selection.start.column && r.range.location + r.range.length >= selection.start.column {
+                        selection.start.column = r.range.location
+                        selection.end.column = r.range.location + r.range.length
+                        break
+                    }
+                }
+                
+            }
+        }
+        
         var lines = [(Int, Int, Int)]()
         
         for range in buffer.selections {
